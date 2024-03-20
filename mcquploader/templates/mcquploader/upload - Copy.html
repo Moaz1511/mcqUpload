@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload PowerPoint File</title>
+    <style>
+        iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload a PowerPoint file</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Upload</button>
+    </form>
+
+    <h2>Google Sheet</h2>
+    <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQgTK9s5Oyo4zjJd48xs1qSYNFsP5e7c1WvD03cIWGdhGRIF5eww7YRzP2GdhyP3AeJV1PYKfGj7OaH/pubhtml?widget=true&amp;headers=false"></iframe>
+</body>
+</html>
