@@ -10,7 +10,7 @@ from django.http import HttpResponse
 
 def extract_mcq_info(text):
     # Define the regular expression pattern to match questions, references, options, answers, and explanations
-    question_regex = r"(\d+।)\s*(.*?)\s*(?:\[(.*?)\])?\s+\(ক\)\s*(.*?)\s+\(খ\)\s*(.*?)\s+\(গ\)\s*(.*?)\s+\(ঘ\)\s*(.*?)\s+উত্তর:\s+(.*?)(?:\s+ব্যাখ্যা:\s+(.*?))?(?=\d+।|$)"
+    question_regex = r"(\d+।)\s*(.*?)\s*(?:\[(.*?)\])?\s+\(ক\)\s*(.*?)\s+\(খ\)\s*(.*?)\s+\(গ\)\s*(.*?)\s+\(ঘ\)\s*(.*?)\s*(?:\s+উত্তর:\s+(.*?))?(?:\s+ব্যাখ্যা:\s+(.*?))?(?=\d+।|$)"
     
     match = re.finditer(question_regex, text, re.DOTALL)
     mcq_list = []
