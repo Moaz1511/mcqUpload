@@ -20,8 +20,15 @@ from mcquploader import views
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
-    # path('', views.home, name='home'),  # Add this line for the root URL
-    path('', views.file_upload, name='home'),  # Add this line
+    path('', views.home, name='home'),  # Add this line for the root URL
+    path('upload/', views.file_upload, name='file_upload'),  # Add this line
     # path('', views.upload_file, name='home'),  # Add this line
-    path('mcquploader/', include('mcquploader.urls')),
+    # path('mcquploader/', include('mcquploader.urls')),
+    # path('mcqdownloader/', include('mcquploader.urls')),
+    
+    # For MCQ uploading functionality, namespace mcquploader
+    path('mcquploader/', include(('mcquploader.urls', 'mcquploader'), namespace='mcquploader')),
+
+    # For downloading lecture slides, namespace mcqdownloader
+    path('mcqdownloader/', include(('mcquploader.urls', 'mcqdownloader'), namespace='mcqdownloader')),
 ]
