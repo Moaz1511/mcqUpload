@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - PowerPoint to Google Sheet to PowerPoint</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        p {
+            text-align: center;
+            color: #666;
+        }
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px; /* Spacing between buttons */
+            margin-top: 20px;
+        }
+        a {
+            text-decoration: none;
+            color: white;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 16px;
+            min-width: 200px; /* Ensures buttons are of equal width */
+            transition: background-color 0.3s ease;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PowerPoint to Google Sheet to PowerPoint</h1>
+        <p>This app allows you to upload PowerPoint files to Google Sheets and download lecture slides from Google Sheets.</p>
+
+        <!-- Button Container for Flexbox Alignment -->
+        <div class="button-container">
+            <!-- Django URL for uploading PowerPoint file -->
+            <a href="{% url 'mcquploader:file_upload' %}" class="button">Upload PowerPoint to Google Sheet</a>
+
+            <!-- Django URL for downloading lecture slide as PPTX -->
+            <a href="{% url 'mcqdownloader:download_lecture_slide' %}" class="button">Download Lecture Slide from Google Sheet</a>
+        </div>
+    </div>
+</body>
+</html>
