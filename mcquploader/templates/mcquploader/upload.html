@@ -82,7 +82,7 @@
 
         <h1>Export Worksheet as Excel</h1>
         <!-- This form is used to trigger the export action -->
-        <form action="{% url 'export_worksheet' %}" method="post">
+        <form action="{% url 'mcquploader:export_worksheet' %}" method="post">
             {% csrf_token %}
             <button type="submit">Export to Excel</button>
         </form>

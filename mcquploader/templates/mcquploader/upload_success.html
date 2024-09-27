@@ -72,7 +72,7 @@
         <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQgTK9s5Oyo4zjJd48xs1qSYNFsP5e7c1WvD03cIWGdhGRIF5eww7YRzP2GdhyP3AeJV1PYKfGj7OaH/pubhtml?widget=true&amp;headers=false"></iframe>
 
         <!-- This form is used to trigger the export action -->
-        <form action="{% url 'export_worksheet' %}" method="post">
+        <form action="{% url 'mcquploader:export_worksheet' %}" method="post">
             {% csrf_token %}
             <button type="submit">Export to Excel</button>
         </form>
