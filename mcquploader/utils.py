@@ -5,13 +5,15 @@ from pptx import Presentation
 from oauth2client.service_account import ServiceAccountCredentials
 from google.oauth2.service_account import Credentials
 import tempfile
+import os
 import shutil
 from django.http import HttpResponse
+from copy import deepcopy
 
 def extract_mcq_info(text):
     # Define the regular expression pattern to match questions, references, options, answers, and explanations
     question_regex = r"(\d+।)\s*(.*?)\s*(?:\[(.*?)\])?\s+\(ক\)\s*(.*?)\s+\(খ\)\s*(.*?)\s+\(গ\)\s*(.*?)\s+\(ঘ\)\s*(.*?)\s*(?:\s+উত্তর:\s+(.*?))?(?:\s+ব্যাখ্যা:\s+(.*?))?(?=\d+।|$)"
-    
+
     match = re.finditer(question_regex, text, re.DOTALL)
     mcq_list = []
     for m in match:
@@ -24,12 +26,12 @@ def process_pptx(file_path):
 
     # Authenticate and open Google Sheets
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    
-    credentials_path = "I:/10/Work From Home/13-03-2024/Website/Django/TwigTech/mcquploader/credentials.json"
+
+    credentials_path = "E:/Developer/Website/Django/TwigTech/mcquploader/credentials.json"
     credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
 
     client = gspread.authorize(credentials)
-    sheet = client.open("Your Google Sheet").sheet1
+    sheet = client.open("Automation | PowerPoint to Google Sheet to PowerPoint").worksheet('UploadToGoogleSheet')  # Access the specified worksheet
 
     row = 2  # Start from row 2 to avoid header
 
@@ -85,53 +87,10 @@ def process_pptx(file_path):
     if batch_updates:
         sheet.update(f'A{row}:I{row + len(batch_updates) - 1}', batch_updates)
 
-# Remember to replace 'path/to/credentials.json' with the actual path to your Google service account credentials
-# and "Your Google Sheet" with the name of your Google Sheet.
-'''
-def export_worksheet_as_excel(spreadsheet_id, worksheet_title):
-    # Authenticate and open Google Sheets
-    # Define the scope
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-
-    # Path to your service account credentials .json file
-    credentials_path = "I:/10/Work From Home/13-03-2024/Website/Django/TwigTech/mcquploader/credentials.json"
-
-    # Load the credentials
-    credentials = Credentials.from_service_account_file(credentials_path, scopes=scope)
-
-    # Authorize the client with gspread
-    client = gspread.authorize(credentials)
-
-    # Now you can use the client to open a Google Sheet by title or key
-    sheet = client.open("Your Google Sheet").sheet1
-
-    try:
-        # Attempt to open the spreadsheet
-        spreadsheet = client.open_by_key(spreadsheet_id)
-        worksheet = spreadsheet.worksheet(worksheet_title)
-        
-        # Export the worksheet to a new temporary Excel file
-        with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmpfile:
-            worksheet.export(file_format='xlsx', filename=tmpfile.name)
-            
-            # Read the content of the temporary Excel file
-            with open(tmpfile.name, 'rb') as f:
-                excel_data = f.read()
-            
-            # Prepare the HttpResponse with the Excel file
-            response = HttpResponse(excel_data, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = f'attachment; filename="{worksheet_title}.xlsx"'
-            
-            return response
-    finally:
-        # Cleanup the temporary file
-        if 'tmpfile' in locals():
-            shutil.rmtree(tmpfile.name, ignore_errors=True)
-'''
 
 def export_worksheet_as_excel(spreadsheet_id, worksheet_title):
     # Authenticate with Google Sheets
-    credentials = Credentials.from_service_account_file('I:/10/Work From Home/13-03-2024/Website/Django/TwigTech/mcquploader/credentials.json', scopes=["https://www.googleapis.com/auth/spreadsheets"])
+    credentials = Credentials.from_service_account_file('E:/Developer/Website/Django/TwigTech/mcquploader/credentials.json', scopes=["https://www.googleapis.com/auth/spreadsheets"])
     gc = gspread.authorize(credentials)
 
     # Open the spreadsheet and worksheet
@@ -148,9 +107,73 @@ def export_worksheet_as_excel(spreadsheet_id, worksheet_title):
     # Create a Pandas Excel writer using XlsxWriter as the engine
     excel_file = f"{worksheet_title}.xlsx"
     sheet_name = 'Sheet1'
-    
+
     with pd.ExcelWriter(excel_file, engine='openpyxl') as writer:
         df.to_excel(writer, sheet_name=sheet_name, index=False)
 
     return excel_file
 
+# Set up Google Sheets API
+def google_sheets_login():
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    creds = ServiceAccountCredentials.from_json_keyfile_name('E:/Developer/Website/Django/TwigTech/mcquploader/credentials.json', scope)
+    client = gspread.authorize(creds)
+    return client
+
+
+# Function to fetch data from Google Sheets
+def get_google_sheet_data(sheet_name):
+    client = google_sheets_login()
+    sheet = client.open(sheet_name).worksheet('DownloadLectureSlide')  # Access the specified worksheet
+    data = sheet.get_all_values()  # Fetch all data from the sheet
+    return data
+
+# Function to duplicate a slide
+def duplicate_slide(prs, index):
+    """Duplicate the slide at the given index."""
+    slide = prs.slides[index]
+    slide_layout = slide.slide_layout
+    new_slide = prs.slides.add_slide(slide_layout)
+    
+    for shape in slide.shapes:
+        if hasattr(shape, "text"):
+            new_shape = deepcopy(shape)
+            new_slide.shapes._spTree.insert_element_before(new_shape._element, 'p:extLst')
+
+    return new_slide
+
+
+# Function to copy data into PowerPoint and download lecture slides
+def copy_data_to_ppt(slide_number, sheet_data, template_path, output_path):
+    prs = Presentation(template_path)
+
+    for i in range(3, slide_number + 3):
+        # Add or duplicate slides
+        if i < len(prs.slides):
+            slide = prs.slides[i]
+        else:
+            slide = duplicate_slide(prs, 3)
+
+        # Extract data from the Google Sheet
+        n = sheet_data[i - 3][0]  # Number
+        q = sheet_data[i - 3][1]  # Question
+        r = sheet_data[i - 3][2]  # Reference
+        o1 = sheet_data[i - 3][3]  # Option A
+        o2 = sheet_data[i - 3][4]  # Option B
+        o3 = sheet_data[i - 3][5]  # Option C
+        o4 = sheet_data[i - 3][6]  # Option D
+        a = sheet_data[i - 3][7]  # Answer
+
+        # Check if the slide has enough shapes to add data
+        if len(slide.shapes) >= 8:
+            slide.shapes[0].text = n
+            slide.shapes[1].text = q
+            slide.shapes[2].text = r
+            slide.shapes[3].text = o1
+            slide.shapes[4].text = o2
+            slide.shapes[5].text = o3
+            slide.shapes[6].text = o4
+            slide.shapes[7].text = a
+
+    # Save the PowerPoint presentation
+    prs.save(output_path)
